@@ -1,6 +1,7 @@
 package fn
 
 import (
+	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
@@ -8,13 +9,22 @@ import (
 	"strings"
 )
 
+var sharedSecret = os.Getenv("SHARED_SECRET")
 var secret = os.Getenv("SECRET")
 var trustedDomain = os.Getenv("TRUSTED_DOMAIN")
 
 // GetKey Return encryption key on domain validation success
 func GetKey(w http.ResponseWriter, r *http.Request) {
+	var payload struct {
+		Secret string `json:"secret"`
+	}
 
-	fmt.Println(r.Header)
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		fmt.Println("Received invalid request!")
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "Invalid Request!")
+		return
+	}
 
 	if secret == "" {
 		fmt.Println("WARN: Secret is empty")
@@ -42,6 +52,16 @@ func GetKey(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "INTERNAL SERVER ERROR")
 		return
 	}
+
+	if payload.Secret != sharedSecret {
+		fmt.Printf("Shared Secret authentication failed for client %s\n", clientIP)
+		w.WriteHeader(http.StatusUnauthorized)
+		fmt.Fprintf(w, "UNAUTHORIZED")
+		return
+	}
+
+	fmt.Println(r.Header)
+
 	ips, err := net.LookupIP(trustedDomain)
 
 	if err != nil {
