@@ -1,3 +1,3 @@
-module github.com/thecalcaholic/domain-validation-secret-provider
+module github.com/thecalcaholic/domain-based-secret-provider
 
 go 1.14

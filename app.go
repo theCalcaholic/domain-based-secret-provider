@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/thecalcaholic/domain-validation-secret-provider/fn"
+	"github.com/thecalcaholic/domain-based-secret-provider/fn"
 )
 
 func main() {
